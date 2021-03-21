@@ -102,7 +102,7 @@ Let's build my powerful shell with those system calls.
 - When the user enters `history` in the prompt, print out the history of commands in the following format. Note that `history` will be a built-in command since the shell needs to process this command by itself.
 
   ```
-	fprintf(stderr, "%3d: %s", index, command);
+	fprintf(stderr, "%2d: %s", index, command);
 	```
 
 - Allow the user to execute n-th command in the history with `! <number>`. See below example
