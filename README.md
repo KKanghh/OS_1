@@ -97,7 +97,9 @@ Let's build my powerful shell with those system calls.
 #### Keep the command history (50 pts)
 - It would be awesome if the shell remembers all your past commands and allows to run some easily, isn't it? So, the instructor initially designed the framework to support the nice feature, but could not finish by the deadline. Your task is to complete this feature.
 
-- When the framework receives a line of command, it invokes `keep_in_history()` before processing the command. Complete the function to maintain the command history. You must use `struct list_head history` to keep the history.
+- When the framework receives a line of command, it invokes `keep_in_history()` before processing the command. Complete the function to maintain the command history. You must use `struct list_head history` to keep the history. (Updated March 22, 5pm) Do not access `prev` and `next` of `struct list_head` directly as of PA0.
+
+- (Updated March 22, 5pm) Your implementation should be able to hold unlimited history entries. Also, each command can be up to *some* size limit, which should be considered during allocating the buffer for command strings.
 
 - When the user enters `history` in the prompt, print out the history of commands in the following format. Note that `history` will be a built-in command since the shell needs to process this command by itself.
 
@@ -151,6 +153,7 @@ Let's build my powerful shell with those system calls.
 	 8: ! 7
 	$
 	```
+
 - Hint: Recall the exercise done as PA0.
 
 
@@ -161,7 +164,7 @@ Let's build my powerful shell with those system calls.
 
   ```bash
 	$ cat pa1.c | sort -n
-	$ echo "hello my cruel world" | cut -c-5
+	$ echo "hello my cruel world" | cut -c2-5
 
 - Note that the shell should be *sane* after processing the pipe.
 
@@ -181,16 +184,17 @@ Let's build my powerful shell with those system calls.
 
 - 260 pts in total
 - Source: ***pa1.c*** (220 pts in total)
-  - Points will be prorated by testcase results.
+	- (Updated March 22, 5pm) You can submit up to 50 times to be tested on PASubmit.
+	- Points will be prorated by testcase results.
 - Document: ***One PDF document*** (30 pts). It should include **ALL** the followings;
 	- Outline how programs are launched and how arguments are passed
-	- How the command history is maintained and recalled later
+	- How the command history is maintained and replayed later
 	- Your ***STRATEGY*** to implement the pipe
 	- AND lessons learned
+
 	- NO MORE THAN ***FOUR*** PAGES
 	- DO NOT INCLUDE COVER PAGE, YOUR NAME, NOR STUDENT ID
-	- YOU WILL GET 0 pts for documentation if you do not comply the statements
-	- Surprisingly, the instructor knows C syntax; you will not get a good point if you just READ code on the document.
+	- COMPLY THE STATEMENTS OTHERWISE YOU WILL GET 0 pts for documentation
 - Git repository URL at git.ajou.ac.kr (10 pts)
   - To get the points, you should actually use the repository to manage your code (i.e., have more than two commits which are hours aparts). You will not get any point if you just committed your final code or the repository is not properly cloned.
 	- How to create your repository to submit:

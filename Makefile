@@ -28,11 +28,11 @@ test-cd: $(TARGET) testcases/test-cd
 	./$< -q < testcases/test-cd
 
 .PHONY: test-history
-test-cd: $(TARGET) testcases/test-history
+test-history: $(TARGET) testcases/test-history
 	./$< -q < testcases/test-history
 
 .PHONY: test-pipe
-test-cd: $(TARGET) testcases/test-pipe
+test-pipe: $(TARGET) testcases/test-pipe
 	./$< -q < testcases/test-pipe
 
 test-all: test-run test-cd test-history test-pipe
