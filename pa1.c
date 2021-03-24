@@ -54,6 +54,9 @@ static int __process_command(char * command);
  */
 static int run_command(int nr_tokens, char *tokens[])
 {
+	int pp = false, nr_child = 0, pipefd[2];
+	char buffer[MAX_COMMAND_LEN];
+
 	if (strcmp(tokens[0], "exit") == 0) return 0;
 
 	if (strcmp(tokens[0], "cd") == 0) {
@@ -91,6 +94,13 @@ static int run_command(int nr_tokens, char *tokens[])
 		return 1;
 	}
 
+	for (int i = 0; i < nr_tokens; i++) {
+		if (strcmp(tokens[i], "|") == 0) {
+			pp = true;
+			tokens[i] = NULL;
+		}
+	}
+
 	pid_t pid = fork();
 
 	
@@ -126,8 +136,9 @@ static int run_command(int nr_tokens, char *tokens[])
 static void append_history(char * const command)
 {
 	struct entry* temp = malloc(sizeof(struct entry));
-	temp->string = malloc(sizeof(strlen(command)) + 1);
+	temp->string = malloc(sizeof(char) * (strlen(command) + 1));
 	strcpy(temp->string, command);
+	INIT_LIST_HEAD(&temp->list);
 	list_add(&temp->list, &history);
 	return;
 }
@@ -159,6 +170,12 @@ static int initialize(int argc, char * const argv[])
  */
 static void finalize(int argc, char * const argv[])
 {
+	while (!list_empty(&history)) {
+		struct entry* temp = list_first_entry(&history, struct entry, list);
+		list_del(&temp->list);
+		free(temp->string);
+		free(temp);
+	}
 	return;
 }
 
