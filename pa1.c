@@ -26,7 +26,20 @@
 #include "list_head.h"
 #include "parser.h"
 
+/***********************************************************************
+ * struct list_head history
+ *
+ * DESCRIPTION
+ *   Use this list_head to store unlimited command history.
+ */
+LIST_HEAD(history);
 
+struct entry {
+	char* string;
+	struct list_head list;
+};
+
+static int __process_command(char * command);
 /***********************************************************************
  * run_command()
  *
@@ -44,7 +57,7 @@ static int run_command(int nr_tokens, char *tokens[])
 	if (strcmp(tokens[0], "exit") == 0) return 0;
 
 	if (strcmp(tokens[0], "cd") == 0) {
-		if (strcmp(tokens[1], "~") == 0 || tokens[1] == NULL) {
+		if (nr_tokens == 1 || strcmp(tokens[1], "~") == 0) {
 			chdir(getenv("HOME"));
 			return 1;
 		}
@@ -54,6 +67,30 @@ static int run_command(int nr_tokens, char *tokens[])
 		}
 		return 1;
 	}
+
+	if (strcmp(tokens[0], "history") == 0) {
+		struct entry* temp;
+		int i = 0;
+		list_for_each_entry_reverse(temp, &history, list) {
+			fprintf(stderr, "%2d: %s", i++, temp->string);
+		}
+
+		return 1;
+	}
+
+	if (strcmp(tokens[0], "!") == 0) {
+		struct entry* temp = list_last_entry(&history, struct entry, list);
+		int num = atoi(tokens[1]);
+		for (int i = 0; i < num; i++) {
+			temp = list_prev_entry(temp, list);
+		}
+		char* inst = malloc(sizeof(char) * (strlen(temp->string) + 1));
+		strcpy(inst, temp->string);
+		__process_command(inst);
+		free(inst);
+		return 1;
+	}
+
 	pid_t pid = fork();
 
 	
@@ -76,13 +113,7 @@ static int run_command(int nr_tokens, char *tokens[])
 }
 
 
-/***********************************************************************
- * struct list_head history
- *
- * DESCRIPTION
- *   Use this list_head to store unlimited command history.
- */
-LIST_HEAD(history);
+
 
 
 /***********************************************************************
@@ -94,7 +125,11 @@ LIST_HEAD(history);
  */
 static void append_history(char * const command)
 {
-
+	struct entry* temp = malloc(sizeof(struct entry));
+	temp->string = malloc(sizeof(strlen(command)) + 1);
+	strcpy(temp->string, command);
+	list_add(&temp->list, &history);
+	return;
 }
 
 
