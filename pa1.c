@@ -18,7 +18,8 @@
 #include <getopt.h>
 #include <unistd.h>
 #include <errno.h>
-
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <string.h>
 
 #include "types.h"
@@ -42,8 +43,36 @@ static int run_command(int nr_tokens, char *tokens[])
 {
 	if (strcmp(tokens[0], "exit") == 0) return 0;
 
-	fprintf(stderr, "Unable to execute %s\n", tokens[0]);
-	return -EINVAL;
+	if (strcmp(tokens[0], "cd") == 0) {
+		if (strcmp(tokens[1], "~") == 0 || tokens[1] == NULL) {
+			chdir(getenv("HOME"));
+			return 1;
+		}
+		if (chdir(tokens[1]) == -1) {
+			fprintf(stderr, "Unable to change directory to %s\n", tokens[0]);
+			return -EINVAL;
+		}
+		return 1;
+	}
+	pid_t pid = fork();
+
+	
+	if (pid == 0) {
+		if (execvp(tokens[0], tokens) < 0 ) {
+			fprintf(stderr, "Unable to execute %s\n", tokens[0]);
+			return -EINVAL;
+		}
+	}
+
+	else {
+		int status = 0;
+
+		wait(&status);
+		return 1;
+	}
+
+	return 1;
+	
 }
 
 
@@ -95,7 +124,7 @@ static int initialize(int argc, char * const argv[])
  */
 static void finalize(int argc, char * const argv[])
 {
-
+	return;
 }
 
 
