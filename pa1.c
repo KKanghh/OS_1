@@ -54,8 +54,7 @@ static int __process_command(char * command);
  */
 static int run_command(int nr_tokens, char *tokens[])
 {
-	int pp = false, nr_child = 0, pipefd[2];
-	char buffer[MAX_COMMAND_LEN];
+	int pp = false, status;
 
 	if (strcmp(tokens[0], "exit") == 0) return 0;
 
@@ -94,29 +93,56 @@ static int run_command(int nr_tokens, char *tokens[])
 		return 1;
 	}
 
+	char *new_tokens[MAX_NR_TOKENS] = { NULL };
 	for (int i = 0; i < nr_tokens; i++) {
 		if (strcmp(tokens[i], "|") == 0) {
 			pp = true;
 			tokens[i] = NULL;
+			for (int j = i + 1; j < nr_tokens; j++) {
+				new_tokens[j - (i + 1)] = tokens[j];
+			}
+			break;
 		}
 	}
 
-	pid_t pid = fork();
+	pid_t pid = fork(), pid2;
 
-	
+	//Child
 	if (pid == 0) {
-		if (execvp(tokens[0], tokens) < 0 ) {
+		//Use Pipe
+		if (pp) {
+			int pipefd[2];
+			pipe(pipefd);
+			pid2 = fork();
+			//Child
+			if (pid2 == 0) {
+				close(pipefd[0]);
+				dup2(pipefd[1], STDOUT_FILENO);
+				if (execvp(tokens[0], tokens) < 0) {
+					fprintf(stderr, "Unable to execute %s\n", new_tokens[0]);
+					return -EINVAL;
+				}
+			}
+			//Parent
+			else {
+				close(pipefd[1]);
+				dup2(pipefd[0], STDIN_FILENO);
+				wait(&status);
+				if (execvp(new_tokens[0], new_tokens) < 0) {
+					fprintf(stderr, "Unable to execute %s\n", new_tokens[0]);
+					return -EINVAL;
+				}
+			}
+		}
+
+		if (execvp(tokens[0], tokens) < 0) {
 			fprintf(stderr, "Unable to execute %s\n", tokens[0]);
 			return -EINVAL;
 		}
 	}
 
-	else {
-		int status = 0;
-
-		wait(&status);
-		return 1;
-	}
+	//Parent
+	else wait(&status);
 
 	return 1;
 	
