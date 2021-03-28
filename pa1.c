@@ -119,7 +119,7 @@ static int run_command(int nr_tokens, char *tokens[])
 				close(pipefd[0]);
 				dup2(pipefd[1], STDOUT_FILENO);
 				if (execvp(tokens[0], tokens) < 0) {
-					fprintf(stderr, "Unable to execute %s\n", new_tokens[0]);
+					fprintf(stderr, "Unable to execute %s\n", tokens[0]);
 					return -EINVAL;
 				}
 			}
